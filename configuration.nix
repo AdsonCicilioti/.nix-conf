@@ -127,6 +127,11 @@ in {
           enable = true;
           userName = "Adson Cicilioti";
           userEmail = "eu@adsonagencia.com";
+          extraConfig = {
+            pull = {
+              rebase = false;
+            };
+          };
         };
       };
     };
