@@ -80,8 +80,8 @@ in {
   };
 
   # Configure keymap in X11
-  services.xserver.layout = "us";
-  services.xserver.xkbVariant = "intl";
+  services.xserver.layout = "us,br";
+  services.xserver.xkbVariant = "intl,abnt2";
   # services.xserver.xkbOptions = "eurosign:e";
 
   # Enable CUPS to print documents.
@@ -105,7 +105,7 @@ in {
       "log"
       "rfkill"
       "video"
-    ]; 
+    ];
   };
   services.accounts-daemon.enable = true;
 
