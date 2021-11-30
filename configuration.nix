@@ -57,13 +57,13 @@
     enable = true;
     videoDrivers = [ "nvidia" ];
     displayManager = {
-      #sddm.enable = true;
+      sddm.enable = true;
       #lightdm.enable = true;
-      gdm.enable = true;
+      #gdm.enable = true;
       hiddenUsers = lib.mkForce [ ];
     };
-    #desktopManager.plasma5.enable = true;
-    desktopManager.gnome.enable = true;
+    desktopManager.plasma5.enable = true;
+    #desktopManager.gnome.enable = true;
     #desktopManager.pantheon.enable = true;
     screenSection = ''
       Option         "metamodes" "nvidia-auto-select +0+0 {ForceFullCompositionPipeline=On}"
