@@ -7,6 +7,7 @@ let
 in {
   imports = [ (import "${home-manager}/nixos") ];
   home-manager = {
+    useGlobalPkgs = true;
     users = {
       balllazo = {
         home.packages = with pkgs; [
@@ -16,14 +17,19 @@ in {
           inkscape
           krita
           gh
-          vscode
           nixfmt
         ];
-        programs.git = {
-          enable = true;
-          userName = "Adson Cicilioti";
-          userEmail = "eu@adsonagencia.com";
-          extraConfig = { pull = { rebase = false; }; };
+        programs = {
+          vscode = {
+            enable = true;
+            package = pkgs.vscode;
+          };
+          git = {
+            enable = true;
+            userName = "Adson Cicilioti";
+            userEmail = "eu@adsonagencia.com";
+            extraConfig = { pull = { rebase = false; }; };
+          };
         };
       };
     };

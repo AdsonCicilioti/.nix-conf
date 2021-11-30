@@ -1,10 +1,8 @@
 # Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
- {
-  imports =
-    [ /etc/nixos/hardware-configuration.nix ./_hm.nix ];
+{ config, pkgs, lib, ... }: {
+  imports = [ /etc/nixos/hardware-configuration.nix ./_hm.nix ];
 
   hardware.cpu.intel.updateMicrocode = true;
   hardware.opengl.enable = true;
@@ -35,11 +33,17 @@
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
-  networking.useDHCP = false;
-  networking.interfaces.enp4s0.useDHCP = true;
-  networking.interfaces.wlo1.useDHCP = true;
-  networking.networkmanager.enable = true;
+  networking = {
+    useDHCP = false;
+    interfaces = {
+      enp4s0.useDHCP = true;
+      wlo1.useDHCP = true;
+    };
+    networkmanager.enable = true;
+  };
 
+  ### BLUETOOTH ###
+  hardware.bluetooth = { enable = true; };
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
@@ -84,12 +88,28 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable sound.
-  sound.enable = true;
-  # hardware.pulseaudio.enable = true;
+  fonts = {
+    fonts = with pkgs;
+      [ (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; }) ];
+    fontDir.enable = true;
+    enableDefaultFonts = true;
+  };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  services.xserver.libinput.enable = true;
+  ### SOUND ###
+  sound.enable = true;
+  #hardware.pulseaudio.enable = true;
+
+  # Pipewire
+  services.pipewire = {
+    enable = true;
+    pulse = { enable = true; };
+    alsa = {
+      enable = true;
+      support32Bit = true;
+    };
+    jack = { enable = true; };
+    media-session = { enable = true; };
+  };
 
   ### USER ###
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -104,7 +124,12 @@
       "video"
     ];
   };
+
   services.accounts-daemon.enable = true;
+  services.gnome.gnome-keyring.enable = true;
+
+  # Enable touchpad support (enabled default in most desktopManager).
+  services.xserver.libinput.enable = true;
 
   ### SYSTEM PACKAGES ###
   # List packages installed in system profile. To search, run:
