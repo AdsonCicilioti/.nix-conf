@@ -2,11 +2,19 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, lib, ... }: {
-  imports = [ /etc/nixos/hardware-configuration.nix ./_hm.nix ];
+  imports = [ /etc/nixos/hardware-configuration.nix ];
 
   hardware.cpu.intel.updateMicrocode = true;
-  hardware.opengl.enable = true;
-  hardware.opengl.driSupport32Bit = true;
+
+  hardware = {
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+      extraPackages = with pkgs; [ libva libvdpau-va-gl ];
+      extraPackages32 = with pkgs.pkgsi686Linux; [ libva libvdpau-va-gl ];
+    };
+  };
 
   hardware.nvidia.modesetting.enable = true;
   hardware.nvidia.prime = {
@@ -16,12 +24,19 @@
   };
 
   ### BOOT ###
-  boot.kernelPackages = pkgs.linuxPackages_5_15;
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.extraModprobeConfig = ''
-    options hid_apple fnmode=2
-  '';
+  boot = {
+    kernelModules = [ "nvidia" "nvidia-modeset" "nvidia-uvm" "nvidia-drm" ];
+    kernelParams = [ "intel_iommu=on" "nvidia-drm.modeset=1" ];
+    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+    kernelPackages = pkgs.linuxPackages_5_15;
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
+    extraModprobeConfig = ''
+      options hid_apple fnmode=0
+    '';
+  };
+
+  virtualisation = { podman = { enable = true; }; };
 
   ### NETWORK ###
   networking.hostName = "nixell"; # Define your hostname.
@@ -59,16 +74,22 @@
   # Enable the X11 windowing system.
   services.xserver = {
     enable = true;
-    videoDrivers = [ "nvidia" ];
+    videoDrivers = lib.mkForce [ "nvidia" ];
     displayManager = {
-      sddm.enable = true;
-      #lightdm.enable = true;
-      #gdm.enable = true;
+      # sddm.enable = true;
+      #lightdm.enable = false;
+      gdm.enable = true;
       hiddenUsers = lib.mkForce [ ];
+      sessionCommands = ''
+        ${pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource 1 0
+        ${pkgs.xorg.xrandr}/bin/xrandr --auto
+      '';
+      #defaultSession = "pantheon";
     };
-    desktopManager.plasma5.enable = true;
-    #desktopManager.gnome.enable = true;
+    #desktopManager.plasma5.enable = true;
+    desktopManager.gnome.enable = true;
     #desktopManager.pantheon.enable = true;
+    
     screenSection = ''
       Option         "metamodes" "nvidia-auto-select +0+0 {ForceFullCompositionPipeline=On}"
       Option         "AllowIndirectGLXProtocol" "off"
@@ -78,12 +99,11 @@
       Option "AllowNVIDIAGPUScreens"
     '';
     exportConfiguration = true;
-  };
 
-  # Configure keymap in X11
-  services.xserver.layout = "us,br";
-  services.xserver.xkbVariant = "altgr-intl,abnt2";
-  # services.xserver.xkbOptions = "eurosign:e";
+    # Configure keymap in X11
+    layout = "us,br";
+    xkbVariant = "altgr-intl,abnt2";
+  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -97,7 +117,8 @@
 
   ### SOUND ###
   sound.enable = true;
-  #hardware.pulseaudio.enable = true;
+  hardware.pulseaudio.enable = false;
+  # hardware.pulseaudio.support32Bit = true;
 
   # Pipewire
   services.pipewire = {
@@ -107,13 +128,14 @@
       enable = true;
       support32Bit = true;
     };
-    jack = { enable = true; };
+    # jack = { enable = true; };
     media-session = { enable = true; };
   };
 
   ### USER ###
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.balllazo = {
+    shell = pkgs.zsh;
     isNormalUser = true;
     extraGroups = [
       "wheel" # Enable ‘sudo’ for the user.
@@ -144,6 +166,11 @@
     htop
     curl
     firefox
+    brave
+    gimp
+    inkscape
+    krita
+    blender
     tdesktop
     mpv
     cmake
@@ -155,13 +182,20 @@
     pciutils
     meson
     vulkan-tools
+    lm_sensors
     openal
     ffmpeg
+    cudatoolkit
+    gnupg
+
   ];
 
-  programs.dconf.enable = true;
+  programs = { dconf.enable = true; };
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    blender = { cudaSupport = true; };
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -188,7 +222,7 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "22.05"; # Did you read the comment?
+  system.stateVersion = "21.11"; # Did you read the comment?
 
 }
 
