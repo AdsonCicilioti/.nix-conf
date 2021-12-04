@@ -44,10 +44,10 @@
 
   ### FILESYSTEMS ###
   fileSystems."/" = {
-    options = [ "noatime" "compress=lzo" "space_cache=v2" "subvol=@" ];
+    options = [ "noatime" "compress=zstd" "space_cache" "discard=async" "subvol=@" ];
   };
   fileSystems."/home" = {
-    options = [ "noatime" "compress=lzo" "space_cache=v2" "subvol=@home" ];
+    options = [ "noatime" "compress=zstd" "space_cache=v2" "discard=async" "subvol=@home" ];
   };
 
   ### VIRTUALIZATION ###
@@ -188,6 +188,7 @@
     krita
     blender
     mpv
+    git
     cmake
     gnumake
     gcc
