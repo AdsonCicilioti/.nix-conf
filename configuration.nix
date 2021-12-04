@@ -25,17 +25,32 @@
 
   ### BOOT ###
   boot = {
-    kernelModules = [ "nvidia" "nvidia-modeset" "nvidia-uvm" "nvidia-drm" ];
-    kernelParams = [ "intel_iommu=on" "nvidia-drm.modeset=1" ];
+    kernelModules = [ "hid-apple" ];
+    kernelParams = [
+      "intel_iommu=on"
+      "hid_apple.fnmode=2"
+      "quiet"
+      "udev.log_priority=3"
+      "rd.systemd.show_status=auto"
+    ];
+    initrd.verbose = false;
+    consoleLogLevel = 0;
     extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
-    kernelPackages = pkgs.linuxPackages_5_15;
+    kernelPackages = pkgs.linuxPackages_zen;
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    extraModprobeConfig = ''
-      options hid_apple fnmode=0
-    '';
+    plymouth = { enable = true; };
   };
 
+  ### FILESYSTEMS ###
+  fileSystems."/" = {
+    options = [ "noatime" "compress=lzo" "space_cache=v2" "subvol=@" ];
+  };
+  fileSystems."/home" = {
+    options = [ "noatime" "compress=lzo" "space_cache=v2" "subvol=@home" ];
+  };
+
+  ### VIRTUALIZATION ###
   virtualisation = { podman = { enable = true; }; };
 
   ### NETWORK ###
@@ -76,20 +91,17 @@
     enable = true;
     videoDrivers = lib.mkForce [ "nvidia" ];
     displayManager = {
-      # sddm.enable = true;
-      #lightdm.enable = false;
+
       gdm.enable = true;
       hiddenUsers = lib.mkForce [ ];
       sessionCommands = ''
         ${pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource 1 0
         ${pkgs.xorg.xrandr}/bin/xrandr --auto
+        modprobe -r hid_apple && modprobe hid_apple
       '';
-      #defaultSession = "pantheon";
     };
-    #desktopManager.plasma5.enable = true;
     desktopManager.gnome.enable = true;
-    #desktopManager.pantheon.enable = true;
-    
+
     screenSection = ''
       Option         "metamodes" "nvidia-auto-select +0+0 {ForceFullCompositionPipeline=On}"
       Option         "AllowIndirectGLXProtocol" "off"
@@ -104,6 +116,9 @@
     layout = "us,br";
     xkbVariant = "altgr-intl,abnt2";
   };
+
+  # TOUCHEGG
+  services.touchegg.enable = true;
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -147,7 +162,7 @@
     ];
   };
 
-  services.accounts-daemon.enable = true;
+  # KEYRING - Fix vscode sync
   services.gnome.gnome-keyring.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -165,36 +180,61 @@
     neofetch
     htop
     curl
-    firefox
     brave
+    firefox
+    chrome-gnome-shell
     gimp
     inkscape
     krita
     blender
-    tdesktop
     mpv
     cmake
     gnumake
     gcc
+    sassc
     pkg-config
     binutils
     coreutils
     pciutils
+    compsize
     meson
+    ninja
     vulkan-tools
     lm_sensors
     openal
     ffmpeg
-    cudatoolkit
     gnupg
-
+    gtk-engine-murrine
+    gdk-pixbuf
+    librsvg
   ];
 
-  programs = { dconf.enable = true; };
+  # EXCLUDE GNOME APPS
+  environment.gnome.excludePackages = [
+    pkgs.epiphany
+  ];
 
-  nixpkgs.config = {
-    allowUnfree = true;
-    blender = { cudaSupport = true; };
+  # FLATPAK
+  services.flatpak.enable = true;
+  # xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ]; # ENABLE FOR NON GNOME DESKTOP
+
+  programs = {
+    dconf.enable = true;
+    kdeconnect = {
+      enable = true;
+      package = pkgs.gnomeExtensions.gsconnect;
+    };
+  };
+
+  nixpkgs = {
+    config = { allowUnfree = true; };
+
+    ## OVERLAYS ##
+    overlays = [
+      (final: prev: {
+        blender = prev.blender.override { cudaSupport = true; };
+      })
+    ];
   };
 
   # Some programs need SUID wrappers, can be configured further or are
