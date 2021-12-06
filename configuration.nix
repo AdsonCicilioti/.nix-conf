@@ -1,6 +1,3 @@
-# Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { config, pkgs, lib, ... }: {
   imports = [ /etc/nixos/hardware-configuration.nix ];
 
@@ -39,7 +36,7 @@
     kernelPackages = pkgs.linuxPackages_zen;
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    plymouth = { enable = true; };
+    # plymouth = { enable = true; };
   };
 
   ### FILESYSTEMS ###
@@ -60,9 +57,6 @@
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";
 
-  # The global useDHCP flag is deprecated, therefore explicitly set to false here.
-  # Per-interface useDHCP will be mandatory in the future, so this generated config
-  # replicates the default behaviour.
   networking = {
     useDHCP = false;
     interfaces = {
@@ -70,16 +64,17 @@
       wlo1.useDHCP = true;
     };
     networkmanager.enable = true;
+    nameservers = [
+      "1.1.1.1"
+      "8.8.8.8"
+    ];
   };
 
   ### BLUETOOTH ###
   hardware.bluetooth = { enable = true; };
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "pt_BR.UTF-8";
+  i18n.defaultLocale = "en_US.UTF-8";
   console = {
     font = "Lat2-Terminus16";
     keyMap = "us";
@@ -116,6 +111,9 @@
     layout = "us,br";
     xkbVariant = "altgr-intl,abnt2";
   };
+
+  # Account Daemon
+  services.accounts-daemon.enable = true;
 
   # TOUCHEGG
   services.touchegg.enable = true;
@@ -162,6 +160,8 @@
     ];
   };
 
+  services.logind.killUserProcesses = true;
+
   # KEYRING - Fix vscode sync
   services.gnome.gnome-keyring.enable = true;
 
@@ -171,6 +171,7 @@
   ### SYSTEM PACKAGES ###
   # List packages installed in system profile. To search, run:
   # $ nix search wget
+  # environment.binsh = "${pkgs.bash}/bin/bash";zsh emulate
   environment.systemPackages = with pkgs; [
     # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     neovim
@@ -189,17 +190,12 @@
     blender
     mpv
     git
-    cmake
-    gnumake
-    gcc
     sassc
     pkg-config
     binutils
     coreutils
     pciutils
     compsize
-    meson
-    ninja
     vulkan-tools
     lm_sensors
     openal
@@ -220,11 +216,13 @@
   # xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ]; # ENABLE FOR NON GNOME DESKTOP
 
   programs = {
+    zsh.enable = true;
     dconf.enable = true;
     kdeconnect = {
       enable = true;
       package = pkgs.gnomeExtensions.gsconnect;
     };
+    # gnome-terminal.enable = true;
   };
 
   nixpkgs = {
@@ -238,31 +236,8 @@
     ];
   };
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "21.11"; # Did you read the comment?
 
 }

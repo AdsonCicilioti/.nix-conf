@@ -3,7 +3,7 @@
 {
   imports = [
     ./home/zsh/zsh.nix
-    ./home/dconf/dconf.nix
+    #./home/dconf/dconf.nix # COMMENT AFTER FIRST RUN/INSTALL
   ];
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
@@ -28,9 +28,9 @@
     gh
     nixpkgs-fmt
     shellcheck
+    flameshot
     tela-icon-theme
-    whitesur-gtk-theme
-    whitesur-icon-theme
+    materia-theme
     gnomeExtensions.color-picker
     gnomeExtensions.appindicator
     gnomeExtensions.dash-to-dock

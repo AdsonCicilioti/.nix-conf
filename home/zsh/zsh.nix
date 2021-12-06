@@ -5,8 +5,9 @@
       enable = true;
       autocd = true;
       # defaultKeymap = "viins";
-      enableCompletion = true;
-      enableAutosuggestions = true;
+      # enableCompletion = true;
+      # enableAutosuggestions = true;
+      # enableVteIntegration = true;
       history = {
         ignoreDups = true;
         ignoreSpace = true;
@@ -17,8 +18,8 @@
         # Reduce time to wait for multi-key sequences
         KEYTIMEOUT = 1;
         # Set right prompt to show time
-        # RPROMPT = "%F{8}%*";
-        # zsh-users config
+        RPROMPT = "%F{8}%*";
+
         ZSH_AUTOSUGGEST_USE_ASYNC = 1;
         ZSH_HIGHLIGHT_HIGHLIGHTERS = [ "main" "brackets" "cursor" ];
       };
