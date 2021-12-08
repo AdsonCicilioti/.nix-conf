@@ -33,6 +33,7 @@
         srch = "nix search";
         "srch!" = "nix search -u";
         clr = "clear";
+        clrgen = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations old";
       };
       initExtraFirst = ''
         zstyle ':zim:input' double-dot-expand yes

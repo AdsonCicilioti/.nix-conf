@@ -34,9 +34,12 @@
     consoleLogLevel = 0;
     extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
     kernelPackages = pkgs.linuxPackages_zen;
-    loader.systemd-boot.enable = true;
-    loader.efi.canTouchEfiVariables = true;
-    # plymouth = { enable = true; };
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+      systemd-boot.configurationLimit = 10;
+    };
+    # plymouth = { enable = true; }; # Problem double login with GDM when ZSH as default shell
   };
 
   ### FILESYSTEMS ###
@@ -45,6 +48,20 @@
   };
   fileSystems."/home" = {
     options = [ "noatime" "compress=zstd" "space_cache=v2" "discard=async" "subvol=@home" ];
+  };
+  fileSystems."/mnt/Storage" = {
+    device = "/dev/disk/by-label/Storage";
+    fsType = "ntfs3";
+    options = [
+      "nosuid"
+      "nodev"
+      "nofail"
+      "x-gvfs-show"
+      "auto"
+      "rw"
+      "uid=1000"
+      "gid=100"
+    ];
   };
 
   ### VIRTUALIZATION ###
@@ -160,13 +177,20 @@
     ];
   };
 
-  services.logind.killUserProcesses = true;
+  # services.logind.killUserProcesses = true;
 
   # KEYRING - Fix vscode sync
   services.gnome.gnome-keyring.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
+
+  ### NIX ###
+  nix = {
+    optimise.automatic = true;
+    autoOptimiseStore = true;
+    gc.automatic = true;
+  };
 
   ### SYSTEM PACKAGES ###
   # List packages installed in system profile. To search, run:
