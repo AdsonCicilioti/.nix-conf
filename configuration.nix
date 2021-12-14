@@ -71,6 +71,7 @@
   networking.hostName = "nixell"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
+
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";
 
@@ -128,6 +129,25 @@
     layout = "us,br";
     xkbVariant = "altgr-intl,abnt2";
   };
+
+  services.avahi.hostName = "nixell";
+  services.samba = {
+    enable = true;
+    securityType = "user";
+    extraConfig = ''
+      workgroup = WORKGROUP
+      server string = nixell
+      netbios name = nixell
+      security = user
+      #use sendfile = yes
+      #max protocol = smb2
+      hosts allow = 10.0.0  localhost
+      hosts deny = 0.0.0.0/0
+      guest account = nobody
+      map to guest = bad user
+    '';
+  };
+  services.gvfs.enable = true;
 
   # Account Daemon
   services.accounts-daemon.enable = true;
@@ -187,6 +207,7 @@
 
   ### NIX ###
   nix = {
+    buildCores = 8;
     optimise.automatic = true;
     autoOptimiseStore = true;
     gc.automatic = true;
@@ -219,6 +240,7 @@
     binutils
     coreutils
     pciutils
+    cifs-utils
     compsize
     vulkan-tools
     lm_sensors
@@ -232,7 +254,7 @@
 
   # EXCLUDE GNOME APPS
   environment.gnome.excludePackages = [
-    pkgs.epiphany
+   pkgs.epiphany
   ];
 
   # FLATPAK
@@ -246,7 +268,6 @@
       enable = true;
       package = pkgs.gnomeExtensions.gsconnect;
     };
-    # gnome-terminal.enable = true;
   };
 
   nixpkgs = {
