@@ -27,9 +27,9 @@
         "reload!" = "source $HOME/.zshrc";
         ll = "ls -l";
         la = "ls -lha";
-        "rbuild!" = "sudo nixos-rebuild switch --cores 8 -j 8";
-        rbuild = "sudo nixos-rebuild boot --cores 8 -j 8";
-        hmbuild = "home-manager switch --cores 8";
+        "rbuild!" = "sudo nixos-rebuild switch";
+        rbuild = "sudo nixos-rebuild boot";
+        hmbuild = "home-manager switch";
         srch = "nix search";
         "srch!" = "nix search -u";
         clr = "clear";
@@ -56,7 +56,7 @@
         SPACESHIP_USER_PREFIX=""
         SPACESHIP_USER_SHOW=false
         SPACESHIP_PROMPT_ADD_NEWLINE=false
-        SPACESHIP_CHAR_SYMBOL=" ❱❱"
+        SPACESHIP_CHAR_SYMBOL="❱❱❱"
         SPACESHIP_CHAR_SUFFIX=" "
 
         # HISTORY search
